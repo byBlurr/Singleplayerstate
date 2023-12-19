@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Singleplayerstate.Profiles;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -52,6 +53,9 @@ namespace Singleplayerstate
         public Color hoverColor = Color.FromArgb(39, 44, 47);
         public Color holdColor = Color.FromArgb(39, 44, 47);
 
+        // Profile stuff
+        private ProfileManager profileManager;
+
         public mainForm()
         {
             InitializeComponent();
@@ -59,6 +63,8 @@ namespace Singleplayerstate
 
         private void mainForm_Load(object sender, EventArgs e)
         {
+            profileManager = ProfileManager.Get(); // Create instance of profile manager
+
             folderPaths.Add("Placeholder", "Placeholder");
             addonPaths.Add("Placeholder", "Placeholder");
 
@@ -149,6 +155,7 @@ namespace Singleplayerstate
                     if (folderPaths != null)
                     {
                         folderPaths[displayName] = selectedFolder;
+                        profileManager.SetCurrentPath(selectedFolder);
                         string serializedPaths = JsonSerializer.Serialize(folderPaths);
                         Properties.Settings.Default.availableServers = serializedPaths;
                         Properties.Settings.Default.Save();
@@ -899,6 +906,8 @@ namespace Singleplayerstate
 
                         if (doesServerExist)
                         {
+                            profileManager.SetCurrentPath(serverPath);
+
                             panelAccountProfiles.Controls.Clear();
                             panelAccountProfiles.Visible = false;
                             panelAccountSeparator.Visible = false;
@@ -1796,7 +1805,7 @@ namespace Singleplayerstate
                 AkiServerDetector.Dispose();
                 AkiServerDetector = null;
             }
-
+            
             toggleUI(true);
         }
 
@@ -2125,6 +2134,7 @@ namespace Singleplayerstate
                 if (processes.Length == 0)
                 {
                     killProcesses();
+                    profileManager.SaveProfiles();
                     trayIcon.Visible = false;
 
                     if (Properties.Settings.Default.exitParameter == "displaylauncher")
